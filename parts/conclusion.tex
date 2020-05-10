@@ -1,7 +1,9 @@
 \section*{Заключение}
 
-В рамка данной работы удалось:
-\begin{itemize}
-    \item kek~\cite{fastspeech}
-    \item mem
-\end{itemize}
+In this paper, we present TalkNet, a fully convolutional neural speech synthesis  system. The model is composed from two convolutional networks: a grapheme duration predictor and a mel-spectrogram generator. The model does not require another text-to-speech model as a teacher. The ground truth grapheme alignment is extracted from the CTC output of a pretrained speech recognition model.
+
+The explicit duration predictor eliminates skipped or repeated words. TalkNet achieves a comparable level of speech quality to Tacotron 2 and FastSpeech. The model is very compact. It has only $10.8$M parameters, almost 3x less than similar neural TTS models: Tacotron-2 has 28.2M, and FastSpeech has 30.1M parameters. Training TalkNet takes only $\approx 2$ hours on a server with 8 V100 GPUs. The parallel mel-spectrogram generation makes the inference significantly faster.
+
+The model, training recipe, and audio samples will be open sourced as part of the NeMo toolkit~\cite{nemo}.
+
+The authors thank Jon Cohen, Vitaly Lavrukhin, Jason Li, Christopher Parisien, and Joao Felipe Santos for the helpful feedback and review. 

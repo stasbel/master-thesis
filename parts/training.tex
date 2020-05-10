@@ -1,0 +1,16 @@
+\section{Решение}
+
+\subsection{Dataset}
+
+We use the LJSpeech~\cite{ljspeech} dataset for experiments.
+We randomly split the dataset into three sets: $12,500$ samples for training, $300$ samples for validation, and $300$ samples for testing. We lower-cased the input text while leaving all punctuation. We convert ground truth audios to mel-spectrograms through a Short-Time Fourier Transform (STFT) using a 50 ms window size, 12.5 ms frame hop, and a Hann window.
+
+\subsection{Training grapheme duration predictor}
+
+The NN for grapheme duration was trained using the Adam optimizer with $\beta_1=0.9,\beta=0.999,\epsilon=10^{-8}$, weight decay of ${10}^{-6}$ and gradient norm clipping of $1.0$. We used a cosine decay learning rate policy starting from $10^{-3}$ and decreasing to $10^{-5}$ with $2\%$ warmup. We used a batch size of $256$ for one 16GB GPU and scaled learning rate for multi-GPU setups. We trained the grapheme duration predictor for $200$ epochs. Training on one V100 GPU takes $\approx 1.3$ hours on one GPU, and $\approx 11$ minutes on a DGX1 server with 8 GPUs in mixed precision~\cite{micikevicius}.
+
+\subsection{Training mel-spectrogram generator}
+
+As could be seen in Table~\ref{tab:durs-results}, the duration predictor accuracy is around $70\%$, but it covers $\approx 92\%$ of classes within an absolute distance of $\leq1$. Mitigating this train/inference mismatch, we used \textit{duration augmentation} to improve model robustness with respect to errors in the duration predictor. For example, we randomly move the duration between adjacent characters while keeping the total length unchanged. The change in each character duration is unbiased and proportional to the duration value.
+
+We train the mel-spectrogram generator for $200$ epochs with the same training para\-meters as above. We used a batch size of $64$ for one 16GB GPU, and scale learning rate for multi-GPU setup. Training takes $\approx 8$ hours for one V100 GPU and less than $2$ hours for 8 GPUs in mixed precision.

@@ -1,17 +1,31 @@
 \documentclass{spbau-diploma}
 
+\newcommand\TODO[1]{\textcolor{red}{TODO: #1}}  % To mark TODOs.
+\overfullrule=3mm  % To note hbox errors.
+\setdefaultlanguage{english}  % For words breaking.
+
+% Words count
+\usepackage{shellesc}
+\newcommand{\quickcharcount}[1]{
+\ShellEscape{texcount -1 -sum -merge -char -q #1.tex output.bbl > #1-chars.sum}
+\textcolor{red}{\input{#1-chars.sum} characters (not including spaces)}
+}
+
 \begin{document}
 
+\quickcharcount{main}
+
 \include{parts/begining}
+
 \include{parts/introduction}
 
-\section{Обзор предметной области}
-\section{Данные}
-\section{Оценка качества}
-\section{Решение}
-\section{Результаты}
+\include{parts/related-work}
+\include{parts/model}
+\include{parts/training}
+\include{parts/results}
 
 \include{parts/conclusion}
+
 \include{parts/ending}
 
 \end{document}

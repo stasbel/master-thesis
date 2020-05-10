@@ -313,3 +313,13 @@
 
 %% New things
 \usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage[flushleft]{threeparttable}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{soul,color}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{booktabs}
