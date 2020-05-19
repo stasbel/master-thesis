@@ -1,0 +1,21 @@
+\section*{Заключение}
+
+В этой статье мы представляем TalkNet, полностью свернутую нейронную систему синтеза речи. Модель состоит из двух сверточных сетей: предиктора длительности графемы и генератора мэл-спектрограмм. Эта модель не требует другой модели преобразования текста в речь в качестве преподавателя. Выравнивание графемы основной истины извлекается из выходных данных CTC предварительно обученной модели распознавания речи.
+\sep
+In this paper, we present TalkNet, a fully convolutional neural speech synthesis  system. The model is composed of two convolutional networks: a grapheme duration predictor and a mel-spectrogram generator. The model does not require another text-to-speech model as a teacher. The ground truth grapheme alignment is extracted from the CTC output of a pretrained speech recognition model.
+
+The explicit duration predictor practically eliminates skipped or repeated words. TalkNet achieves a comparable level of speech quality to Tacotron 2 and FastSpeech. The model is very compact. It has only $10.8$M parameters, almost 3x less than similar neural TTS models: Tacotron-2 has 28.2M, and FastSpeech has 30.1M parameters. Training TalkNet takes only around $2$ hours on a server with 8 V100 GPUs. The parallel mel-spectrogram generation makes the inference significantly faster.
+
+Современные генеративные модели все еще обладают рядом фундаментальных проблем, которые не позволяют считать задачу генерации решенной. Ценность этой работы заключается не только в предложенном и описанном подходе, решавшем поставленную задачу, но и в трудностях, возникших при реализации и тестировании, указывающих на глобальные проблемы и очерчивающих границы применимости того или иного метода или модели.
+
+В рамках данной работы можно выделить следующие основные результаты:
+\begin{itemize}
+    \item Удалось проанализировать текущие подходы к генерации текста, подробно изучены принципы и особенности работы генеративных моделей с дискретными значениями, намечены основные сложности и проблемы.
+    \item Придуманы и описаны метрики для комплексной оценки качества генерации.
+    \item Придуманы и реализованы способы, позволяющие справляться с существующими проблемами. Основная цель - увеличение длины генерируемых сэмплов, была успешно решена.
+    \item Итоговая модель получилась не только эффективной в терминах метрик, но и интерпретируемой и гибкой. Свойство интерпретируемости, основанное на механизме внимания, не только поможет в дальнейшем правильно анализировать влияние того или иного изменения на результат генерации, но и правильно подбирать параметры при текущей реализации на новых данных.
+\end{itemize}
+
+Представленный подход, несмотря на свою простоту, открывает сразу несколько направлений для дальнейшего изучения и доработки.
+
+The model, training recipe, and audio samples will be open sourced as part of the NeMo toolkit~\cite{nemo}. The authors thank Jon Cohen, Vitaly Lavrukhin, Jason Li, Christopher Parisien, and Joao Felipe Santos for the helpful feedback and review.

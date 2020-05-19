@@ -1,0 +1,365 @@
+%% Простая презентация с примером включения программного кода и
+%% пошаговых спецэффектов
+\documentclass[xcolor=table]{beamer}
+\usetheme{SPbAU}
+%\useoutertheme{infolines}
+\usepackage{fontspec}
+\usepackage{xunicode}
+\usepackage{xltxtra}
+\usepackage{xecyr}
+\usepackage{hyperref}
+\setmainfont[Mapping=tex-text]{DejaVu Serif}
+\setsansfont[Mapping=tex-text]{DejaVu Sans}
+\setmonofont[Mapping=tex-text]{DejaVu Sans Mono}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\usepackage{graphicx}
+\usepackage[normalem]{ulem} 
+\usepackage{listings}
+\lstdefinestyle{mycode}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true, 
+  xleftmargin=\parindent,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{gray!40!black},
+  stringstyle=\color{red},
+  numbers=left,
+  numbersep=5pt,
+  numberstyle=\tiny\color{gray},
+}
+\lstset{escapechar=@,style=mycode}
+\lstdefinelanguage{Kotlin}{
+  comment=[l]{//},
+  commentstyle={\color{gray}\ttfamily},
+  emph={delegate, filter, first, firstOrNull, forEach, lazy, map, mapNotNull, println, return@},
+  emphstyle={\color{OrangeRed}},
+  identifierstyle=\color{black},
+  keywords={abstract, actual, as, as?, break, by, class, companion, continue, data, do, dynamic, else, enum, expect, false, final, for, fun, get, if, import, in, interface, internal, is, null, object, override, package, private, public, return, set, super, suspend, this, throw, true, try, typealias, val, var, vararg, when, where, while},
+  keywordstyle={\color{NavyBlue}\bfseries},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[s]{"""*}{*"""},
+  ndkeywords={@Deprecated, @JvmField, @JvmName, @JvmOverloads, @JvmStatic, @JvmSynthetic, Array, Byte, Double, Float, Int, Integer, Iterable, Long, Runnable, Short, String},
+  ndkeywordstyle={\color{BurntOrange}\bfseries},
+  sensitive=true,
+  stringstyle={\color{ForestGreen}\ttfamily},
+}
+\hypersetup{
+    bookmarks=true,         % show bookmarks bar?
+    unicode=false,          % non-Latin characters in Acrobat’s bookmarks
+    pdftoolbar=true,        % show Acrobat’s toolbar?
+    pdfmenubar=true,        % show Acrobat’s menu?
+    pdffitwindow=false,     % window fit to page when opened
+    pdfstartview={FitH},    % fits the width of the page to the window
+    pdftitle={My title},    % title
+    pdfauthor={Author},     % author
+    pdfsubject={Subject},   % subject of the document
+    pdfcreator={Creator},   % creator of the document
+    pdfproducer={Producer}, % producer of the document
+    pdfkeywords={keyword1, key2, key3}, % list of keywords
+    pdfnewwindow=true,      % links in new PDF window
+    colorlinks=false,       % false: boxed links; true: colored links
+    linkcolor=red,          % color of internal links (change box color with linkbordercolor)
+    citecolor=green,        % color of links to bibliography
+    filecolor=magenta,      % color of file links
+    urlcolor=cyan           % color of external links
+}
+
+
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\usepackage[style=verbose,backend=biber]{biblatex}
+\addbibresource{\jobname.bib}
+
+% To change the total number of slides go to beamerouterThemeSPbAU.sty -> line 93 -> change 15 to whatever you want
+% If you can do it in some cleaner way without breaking enumeration of slides after "results", go ahead and share your work :)
+
+\begin{document}
+
+\title[Определение авторства разработчиков]{Определение авторства разработчиков на основании стиля написания кода}
+\author[Богомолов Е. О.]{Богомолов Е. О.\\~\\{\footnotesize\textcolor{gray}{Научный руководитель: к.ф.-м.н. Д. Ю. Булычев\\Научный консультант: к.т.н. Т. А. Брыксин}}}
+\institute{Санкт-Петербургская школа физико-математических и компьютерных наук\\~\\НИУ ВШЭ -- Санкт-Петербург}
+\frame{\titlepage}
+
+\setbeamertemplate{frametitle}[default][center]
+
+\begin{frame}
+	\frametitle{Задача определения авторства}
+	\begin{center}
+		\includegraphics[width=0.9\textwidth]{images/authorship-rus.pdf}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Мотивация}
+	\Large
+	\begin{itemize}
+		\item Поиск авторов вредоносного ПО
+		\item Поиск плагиата
+		\item Проверка авторства
+		\item Профилирование программистов
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Обзор работ}
+	% \setlength\itemsep{1em}
+	C++\footcite{caliskan2015}
+	\begin{itemize}
+		\item Используются лексические и синтаксические факторы, форматирование
+		\item Обучается случайный лес из 300 деревьев
+		\item Тестирование на решениях 9 задач Google Code Jam, 1600 участников
+	\end{itemize}
+
+	Python\footcite{alsulami2017}
+	\begin{itemize}
+		\item Обучается tree-LSTM по AST и токенам
+		\item Тестирование на решениях 10 задач Google Code Jam, 70 участников
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Обзор работ}
+	Java\footcite{yang2017}
+	\begin{itemize}
+		\item Используются лексические, семантические факторы, форматирование
+		\item Обучается модель из трех полносвязных слоев при помощи:
+		\begin{itemize}
+			\item Стохастического градиентного спуска
+			\item Метода роя частиц\footcite{Kennedy1995}
+		\end{itemize}
+		\item Тестирование на 40 проектах с открытым исходным кодом, у каждого один автор
+		\item Всего 3021 файл, в проектах от 11 до 712		
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Особенности существующих решений}
+	\begin{itemize}
+		\item Данные существенно отличаются от промышленного кода
+		\begin{itemize}
+			\item Специфичные источники данных: соревнования, примеры из книг, домашние задания, проекты с одним автором
+			\item Число фрагментов доступных для автора в пределах от 9 до 800
+		\end{itemize}
+		\item Для различных языков разные решения показывают лучшие результаты
+		\item Лучшие решения не адаптируются для произвольного языка
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Цель и задачи}
+	\textbf{Цель:} создать модель для определения авторства по коду, работающую с произвольными языками программирования и объёмами данных\\~\\
+	\textbf{Задачи:}
+	\begin{itemize}
+		\item Создать инструмент для сбора примеров кода отдельных авторов из произвольных проектов
+		\item Собрать датасеты для тестирования моделей в разных условиях
+		\item Создать прототипы моделей для определения авторства, работающие на основе малого и большого количества данных
+		\item Протестировать модель на доступных датасетах
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Сбор данных}
+	\begin{itemize}
+		\item Предлагаемый подход работает для произвольных проектов, использующих Git
+		\item История проекта разбивается на коммиты, для них известен автор
+		\item Коммиты разбиваются на изменения методов
+		\item Изменения составляют датасет
+		\item Подход реализован и собраны датасеты на основе IntelliJ IDEA
+	\end{itemize}
+	% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% \begin{table}[]
+% 	\centering
+% 	\resizebox{\textwidth}{!}{%
+% 	\begin{tabular}{|c|c|c|c|c|}
+% 	\hline
+% 																 & \textbf{IDEA1} & \textbf{IDEA2} & \textbf{IDEA3} & \textbf{IDEA4} \\ \hline
+% 	\textbf{Число авторов}         & 10             & 16             & 50             & 20             \\ \hline
+% 	\textbf{Число примеров (тыс.)} & 912            & 648            & 1623           & 1228           \\ \hline
+% 	\textbf{Макс. / Мин. примеров} & 5              & 3              & 32             & 8.5            \\ \hline
+% 	\textbf{Примеров в группе}     & 1              & 16             & 16             & 16             \\ \hline
+% 	\end{tabular}%
+% 	}
+% 	\end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Сбор данных: датасеты}
+	\begin{itemize}
+		\item IDEA1-4: разный уровень сбалансированности и число авторов
+		\item IDEA4-6: 20 авторов, деление по пакетам разного уровня
+		\item IDEA7: 10 авторов разделение выборок по времени
+	\end{itemize}
+	\begin{table}[]
+		\centering
+		\resizebox{\textwidth}{!}{%
+		\begin{tabular}{|c|c|c|c|c|}
+		\hline
+																	 & \textbf{IDEA1} & \textbf{IDEA2} & \textbf{IDEA3} & \textbf{IDEA4} \\ \hline
+		\textbf{Число авторов}         & 10             & 16             & 50             & 20             \\ \hline
+		\textbf{Число примеров (тыс.)} & 912            & 648            & 1623           & 1228           \\ \hline
+		\textbf{Макс. / Мин. примеров} & 5              & 3              & 32             & 8.5            \\ \hline
+		\textbf{Примеров в группе}     & 1              & 16             & 16             & 16             \\ \hline
+		\end{tabular}%
+		}
+		\end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Модель: мало данных}
+	% \Large
+	\begin{itemize}
+		\item Случайный лес, число деревьев подобрано экспериментально и равно 500
+		\item В качестве факторов используются частоты путей \footcite{alon2018general} и токенов в AST
+		\item Факторы фильтруются на основе совместной информации между фактором и автором
+		\item Для получения токенов и путей используется специально написанный инструмент, поддерживающий популярные языки программирования
+		\item Произведено сравнение с имеющимися решениями
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Модель: много данных}
+	\begin{itemize}
+		\item Для работы адаптирована архитектура code2vec\footcite{alon2018code2vec}
+		\item Модель уже улучшила результаты в определении имени метода и генерации описания по коду
+		\item Архитектура расширена для работы с несколькими фрагментами кода
+		\item Произведено тестирование на данных IntelliJ IDEA и существующих датасетах
+	\end{itemize}
+\begin{table}[]
+	\centering
+	\resizebox{\textwidth}{!}{%
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+	\hline
+										& \textbf{IDEA1} & \textbf{IDEA2} & \textbf{IDEA3} & \textbf{IDEA4}& \textbf{IDEA5} & \textbf{IDEA6} & \textbf{IDEA7} \\ \hline
+	\textbf{Acc} & 74.4\%         & 99.7\%         & 93.5\%         & 97.8\% & 92\% & 87.3\% & 89.6\%         \\ \hline
+	\textbf{MAP}      & 73.8\%         & 99.7\%         & 91.1\%         & 97.4\% & 93\% & 85.9\% & 88.5\%         \\ \hline
+	\end{tabular}%
+	}
+	\end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Модель: архитектура code2vec}
+	% Представление кода через пути в AST\footcite{alon2018code2vec}, 94.2\% -- 16 метТестирование производов -- 50 разработчиков
+	\begin{center}
+		\includegraphics[width=1\textwidth]{images/VanillaCode2Vec-1.pdf}
+	\end{center}
+	\begin{center}
+		\includegraphics[width=0.85\textwidth]{images/VanillaCode2Vec-2.pdf}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Модель: модернизация code2vec}
+	\begin{center}
+		\includegraphics[width=1\textwidth]{images/AdoptedCode2Vec.pdf}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Тестирование на существующих датасетах}
+	\begin{itemize}
+		\item Модель на основе случайного леса повторяет или улучшает результаты для трех языков
+		\item Нейросетевая модель работает хуже из-за маленького размера обучающей выборки
+	\end{itemize}
+	\begin{table}[]
+		\centering
+		\resizebox{\textwidth}{!}{%
+		\begin{tabular}{|c|c|c|c|}
+		\hline
+	\begin{tabular}[c]{@{}c@{}}\textit{ЯП}\\\textit{Число авторов}\end{tabular} & \begin{tabular}[c]{@{}c@{}}C++\\1600\end{tabular} & \begin{tabular}[c]{@{}c@{}}Python\\70\end{tabular} & \begin{tabular}[c]{@{}c@{}}Java\\40\end{tabular} \\ \hline
+		Caliskan, 2015 & \textbf{92.83\%}                                                                    & 72.9\%                                                                               & -                                                                                  \\ \hline
+		Alsulami, 2017 & -                                                                                   & 88.86\%                                                                              & -                                                                                  \\ \hline
+		Yang, 2017    & -                                                                                   & -                                                                                    & 91.06\%                                                                            \\ \hline
+		Эта работа, нейросеть      & 41.7\%                                                                    & -                                                                      & 86\%                                                                   \\ \hline
+		Эта работа, случайный лес      & \textbf{92.7\%}                                                                    & \textbf{94.1\%}                                                                      & \textbf{97\%}                                                                   \\ \hline
+		\end{tabular}%
+		}
+	\end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Результаты}
+	% \Large
+	\begin{itemize}
+		\item Реализован инструмент, генерирующий датасеты для определения авторства по проектам, использующим Git
+		\item Создан набор из 7 датасетов изменений методов в IntelliJ IDEA
+		\item Созданы и протестированы модели для работы с большим и ограниченным числом данных
+		\item Модель на основе случайного леса повторяет или улучшает точность определения авторства для Java, Python и C++
+		\item Часть работы представлена на MSR'19~\footcite{msr2019}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+\printbibliography[heading=none]
+\end{frame}
+
+\begin{frame}
+	\frametitle{Результаты: IDEA}
+	\begin{table}[]
+		\centering
+		\resizebox{\textwidth}{!}{%
+		\begin{tabular}{|c|c|c|c|c|}
+			\hline
+									& \textbf{Точность} & \textbf{Acc\textsubscript{2}} & \textbf{Acc\textsubscript{5}} & \textbf{MAP} \\ \hline
+			\textbf{IDEA1} & 74.4\%            & 86.3\%          & 95.7\%          & 74.3\%       \\ \hline
+			\textbf{IDEA2} & 99.7\%            & 100\%           & 100\%           & 99.7\%       \\ \hline
+			\textbf{IDEA3} & 94.2\%            & 97.2\%          & 99\%            & 91.9\%       \\ \hline
+			\textbf{IDEA4} & 97.8\%            & 99.3\%          & 99.8\%          & 97.4\%       \\ \hline
+			\textbf{IDEA5} & 92\%              & 96.5\%          & 99.1\%          & 93\%         \\ \hline
+			\textbf{IDEA6} & 87.3\%            & 93.2\%          & 97.7\%          & 85.9\%       \\ \hline
+			\textbf{IDEA7} & 89.6\%            & 95.6\%          & 98.9\%          & 88.5\%       \\ \hline
+			\end{tabular}
+		}
+		\end{table}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Датасеты IDEA}
+	\begin{table}[]
+		\centering
+		\resizebox{\textwidth}{!}{%
+		\begin{tabular}{|c|c|c|c|c|}
+		\hline
+																	 & \textbf{IDEA1} & \textbf{IDEA2} & \textbf{IDEA3} & \textbf{IDEA4} \\ \hline
+		\textbf{Число авторов}         & 10             & 16             & 50             & 20             \\ \hline
+		\textbf{Число примеров (тыс.)} & 912            & 648            & 1623           & 1228           \\ \hline
+		\textbf{Макс. / Мин. примеров} & 5              & 3              & 32             & 8.5            \\ \hline
+		\textbf{Примеров в группе}     & 1              & 16             & 16             & 16             \\ \hline
+		\end{tabular}%
+		}
+		\end{table}
+	\begin{table}[ht]
+		% \caption{Датасеты с разделением по времени и по пакетам разного уровня, построенные по проекту IntelliJ IDEA}
+		\centering
+		\begin{tabular}{|c|c|c|c|}
+			\hline
+										& \textbf{IDEA5} & \textbf{IDEA6} & \textbf{IDEA7} \\ \hline
+			\textbf{Число авторов}         & 20   & 20   & 10  \\ \hline
+			\textbf{Число примеров (тыс.)} & 1228 & 1228 & 912 \\ \hline
+			\textbf{Макс. / Мин. примеров} & 8.5  & 8.5  & 5   \\ \hline
+			\textbf{Примеров в группе}     & 16   & 16   & 16  \\ \hline
+			\textbf{Деление по пакетам}    & 1    & 2    & 0   \\ \hline
+			\textbf{Деление по времени}    & -    & -    & +   \\ \hline
+			\end{tabular}%
+		\label{tab:datasets-cool}
+	\end{table}
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Абстрактное синтаксическое дерево}
+	\begin{center}
+		\includegraphics[width=\textwidth]{images/ast-pbr.png}
+	\end{center}
+\end{frame}
+
+\end{document}

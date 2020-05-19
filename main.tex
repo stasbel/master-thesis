@@ -2,29 +2,37 @@
 
 \newcommand\TODO[1]{\textcolor{red}{TODO: #1}}  % To mark TODOs.
 \overfullrule=3mm  % To note hbox errors.
-\setdefaultlanguage{english}  % For words breaking.
+\newcommand\sep{\newline\textcolor{red}{\rule{\textwidth}{3pt}}\newline\indent}  % RU-EN separator
 
-% Words count
+% Chars count
 \usepackage{shellesc}
-\newcommand{\quickcharcount}[1]{
-\ShellEscape{texcount -1 -sum -merge -char -q #1.tex output.bbl > #1-chars.sum}
-\textcolor{red}{\input{#1-chars.sum} characters (not including spaces)}
+\usepackage{lastpage}
+\newread\tmp
+\newcommand{\stats}[1]{
+\ShellEscape{texcount -1 -sum=1,1,1,1,1,1,1 -merge -char -q #1.tex output.bbl > #1-chars.sum}
+\openin\tmp=#1-chars.sum%
+\read\tmp to \chars%
+\closein\tmp%
+\ShellEscape{texcount -1 -sum=1,1,1,1,1,1,1 -merge -q #1.tex output.bbl > #1-words.sum}
+\openin\tmp=#1-words.sum%
+\read\tmp to \words%
+\closein\tmp%
+\noindent\textcolor{red}{\Huge Chars: \the\numexpr \words + \chars \relax \slash 40000}\\
+\textcolor{red}{\Huge Pages: \pageref*{LastPage}\slash 40}
 }
 
 \begin{document}
 
-\quickcharcount{main}
+\stats{main}
 
 \include{parts/begining}
 
-\include{parts/introduction}
-
-\include{parts/related-work}
-\include{parts/model}
-\include{parts/training}
-\include{parts/results}
-
-\include{parts/conclusion}
+\include{parts/ru/introduction}  % *
+\include{parts/ru/related-work}  % 1
+\include{parts/ru/model}  % 2
+\include{parts/ru/training}  % 3
+\include{parts/ru/results}  % 4
+\include{parts/ru/conclusion}  % *
 
 \include{parts/ending}
 

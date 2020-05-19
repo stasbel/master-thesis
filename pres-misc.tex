@@ -1,0 +1,51 @@
+\documentclass[10pt]{beamer}
+
+\mode<presentation> {
+
+\usetheme{Madrid}  % Circles & dense
+
+\setbeamertemplate{headline}{%
+\leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex]{palette quaternary}%
+    \insertsectionnavigationhorizontal{\paperwidth}{}{\hskip0pt plus1filll}
+    \end{beamercolorbox}%
+  }
+}
+
+\setbeamertemplate{navigation symbols}{}
+
+}
+
+\setbeamertemplate{caption}[numbered]
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{fontspec}
+\usepackage{amsmath}
+\mathchardef\mhyphen="2D % Define a "math hyphen"
+\usepackage{caption}
+\usepackage{xunicode}
+\usepackage{xltxtra}
+\usepackage{lipsum}
+\usepackage{xecyr}
+\usepackage{hyperref}
+\usepackage{amsthm}
+\usepackage{blindtext}
+\usepackage{makecell}
+
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\setmainfont[Mapping=tex-text]{CMU Serif}
+\setsansfont[Mapping=tex-text]{CMU Sans Serif}
+\setmonofont[Mapping=tex-text]{CMU Serif}
+
+\newread\tmp
+\openin\tmp=main.bib%
+\read\tmp to \bib%
+\closein\tmp%
+\begin{filecontents}[overwrite]{\jobname.bib}
+\bib
+\end{filecontents}
+\usepackage[style=verbose,backend=biber]{biblatex}
+\addbibresource{main.bib}
