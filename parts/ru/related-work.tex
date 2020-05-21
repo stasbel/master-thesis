@@ -2,7 +2,7 @@
 
 \subsection{Постановка задачи}
 
-Задача генерации речи имеет простую математическую формулировку. По заданному отрывку текста со строковым представлением (конечная последовательность символов из конечного алфавита), сгенерировать аудиодорожку с хорошо слышимой человеческой речью соответствующей заданному отрывку. Формат аудио обычно представляет из себя последовательность из 16-битных чисел от $-1.0$ до $1.0$ -- дискретное приближение непрерывной аудиоволны. Основной параметр такого формата - это частота дискретизации, выражаемая в герцах (Гц, Hz). Популярными частотами для аудио отрывков в системах генерации речи являются $22.05$ кГц и $24$ кГц. Чем выше частота дискретизации -- тем лучше качество аудио (так как лучше приближение), но тем сложнее уловить зависимости для генерации (Рисунок~\ref{fig:sample-rate}).
+Задача генерации речи имеет простую математическую формулировку. По заданному отрывку текста со строковым представлением (конечная последовательность символов из конечного алфавита), сгенерировать аудиодорожку с хорошо слышимой человеческой речью соответствующей заданному отрывку. Формат аудио обычно представляет из себя последовательность из 16-битных действительных чисел от $-1.0$ до $1.0$ -- дискретное приближение непрерывной аудиоволны. Основной параметр такого формата - это частота дискретизации, выражаемая в герцах (Гц, Hz). Популярными частотами для аудио отрывков в системах генерации речи являются $22.05$ кГц и $24$ кГц (22050 и 24000 значения в секунду соответственно). Чем выше частота дискретизации -- тем лучше качество аудио (так как лучше приближение), но тем сложнее уловить зависимости для генерации (Рисунок~\ref{fig:sample-rate}).
 
 \begin{figure}[!ht]
 \centering
@@ -11,32 +11,107 @@
 \label{fig:sample-rate}
 \end{figure}
 
-Модели на основе нейронных сетей (NN) для преобразования текста в речь (Text-To-Speech, TTS) превзошли как конкатенативный (concatenative), так и статистический параметрический подходы для синтеза речи с точки зрения качества. Они также значительно упрощают процесс синтеза речи. Традиционно. системы синтеза речи объединяет несколько блоков: модель для извлечения лингвистических признаков из текста, модель длительности, модель предсказания акустических признаков и вокодер на основе обработки сигналов~\cite{taylor}, который служит для преобразования акустических признаков в аудиодорожку. Нейронные TTS системы, как правило, имеют два этапа (Рисунок~\ref{fig:tts-pipeline}). На первом этапе модель генерирует мэл-спектрограммы из текста. На втором этапе вокодер на основе нейронной сети синтезирует речь из мэл-спектрограмм. Большинство моделей TTS на основе NN имеют архитектуру экодер-декодер~\cite{bahdanau} с операциями с механизмом внимания (attention), которая, как было замечено, имеет некоторые общие проблемы:
+Модели на основе нейронных сетей (NN) для преобразования текста в речь (Text-To-Speech, TTS) превзошли как конкатенативный (concatenative), так и статистический параметрический подходы для синтеза речи с точки зрения качества. Они также значительно упрощают процесс синтеза речи. Традиционно. системы синтеза речи объединяет несколько блоков: модель для извлечения лингвистических признаков из текста, модель предсказания длительности, модель предсказания акустических признаков и вокодер на основе обработки сигналов~\cite{taylor}, который служит для преобразования акустических признаков в аудиодорожку. Нейронные TTS системы, как правило, имеют два этапа (Рисунок~\ref{fig:tts-pipeline}). На первом этапе модель генерирует мэл-спектрограммы из текста. На втором этапе вокодер на основе нейронной сети синтезирует речь из мэл-спектрограмм. Большинство моделей TTS на основе нейронных сетей имеют архитектуру encoder-decoder~\cite{bahdanau} с операциями с механизмом внимания (attention), которые, как было замечено, имеют некоторые общие проблемы:
 \begin{enumerate}
-    \item A tendency to repeat or skip words~\cite{fastspeech}, due to attention failures when some sub\-sequences are repeated or ignored. To handle this issue, attention-based models use additional mechanisms to encourage monotonic attention \cite{tacotron2,deepvoice3,taigman2017}.
-    \item Slow inference relative to parametric models.
-    \item No easy way to control prosody nor voice speed, since the length of the generated sequence is automatically determined by the decoder.
+    \item Тенденция повторять или пропускать слова~\cite{fastspeech}, из-за сбоев работы механизма внимания, когда некоторые подпоследовательности повторяются или игнорируются. Для решения этой проблемы модели, основанные на механизме внимания, используют дополнительные правила поощрения монотонного внимания~\cite{tacotron2, deepvoice3, taigman2017}. В общем же случае, механизм внимания часто ведет к проблемам на этапа вывода, а также замедляет скорость обучения, так как обычно состоит как минимум из одной операции с квадратичной по времени асимптотикой.
+    \item Медленная скорость вывода относительно параметрических моделей.
+    \item Нет простого способа контролировать просодию (паттерн ритма и интонации голоса) или скорость голоса, так как длина генерируемой последовательности определяется декодером.
 \end{enumerate}
 
 \begin{figure}[!ht]
 \centering
 \includegraphics[width=1.0\textwidth]{images/tts-pipeline.png}
-\caption{Два шага TTS систем}
+\caption{Два шага TTS систем. Первый шаг -- генерация мэл-спектрограммы -- будет рассматриваться в рамках данной работы. Второй шаг -- вокодинг -- отдельная сложная задача. Оба шага имеют полно нерешенных проблем: медленная скорость работы, большое количество весов, заметно уступающее качество в сравнении с записью человеческой речи.}
 \label{fig:tts-pipeline}
 \end{figure}
 
-We propose a new neural TTS model to address these three challenges. The model consists of two convolutional networks. The first network predicts grapheme durations. We expand an input text by repeating each symbol according to the predicted duration. The second network generates mel-spectrograms from an expanded text. Finally, we use the WaveGlow~\cite{waveglow} vocoder to synthesize audio from mel-spectrograms (see Figure~\ref{fig:arch}).
+\subsection{Особенности предлагаемого подхода}
 
-To train the grapheme duration predictor, we need the ground truth alignment between input characters and audio. A similar alignment problem exists in automatic speech recog\-nition (ASR) which is addressed by using Connectionist Temporal Classification (CTC). CTC marginalizes over the set of all valid alignments. However, if we take the most likely output at each moment, we can use it for alignment between the input audio and the text output. This alignment is not perfect, and it can have errors. We found that if the ASR model is accurate and has a low character error rate (CER), then we can extract a good-enough alignment between text and audio features. We can use this CTC-based alignment to train the model which will predict grapheme durations for the input text. The explicit grapheme duration predictor replaces attention-based alignment to eliminate word skipping and repeating. Experiments on the LJSpeech dataset show that the speech quality for TalkNet is similar to auto-regressive models.
+В рамках данной работы описывается новая нейронная модель TTS для решения проблем описанных выше. Модель состоит из двух сверточных сетей. Первая сеть предсказывает длительности графем (входных символов). Далее, входной текст расширяется, повторяя каждый символ в соответствии с предсказанной длительностью. Вторая сеть генерирует мэл-спектрограммы из развернутого текста. Наконец, используется вокодер WaveGlow~\cite{waveglow} для синтеза звука из мэл-спектрограмм (Рисунок~\ref{fig:arch}). Финальная часть -- вокодер -- не является частью модели и должна рассматриваться в рамках отдельной задачи, но в данной работе будет использоваться WaveGlow из-за наличия универсальной претренированой модели и возможности сравнения с другими подходами.
 
-The convolutional structure of both blocks enables parallel training and inference. This structure enables significantly faster inference, has significantly fewer parameters, and can be trained faster than models with similar quality of generated speech, such as FastSpeech~\cite{fastspeech} and Tacotron 2~\cite{tacotron2}.
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/arch.png}
+\caption{TalkNet преобразует текст в речь, используя предиктор длительностей графем, генератор мэл-спектрограмм и вокодер. $\sim$ используется в рамках данной работы для обозначения пустого символа из выхода CTC функции ошибки.}
+\label{fig:arch}
+\end{figure}
+
+Чтобы обучить предсказатель длительностей графем, нам нужно сначала получить истинное выравнивание между входными символами и звуковой дорожкой по времени. Аналогичная проблема выравнивания существует в автоматическом распознавании речи (ASR), которая решается явным образом с помощью Connectionist Temporal Classification (CTC)~\ref{fig:ctc}. CTC маргинализирует вывод по всем возможным выравниваниям, выбирая наилучшее. Выбирая наиболее вероятный выход в каждый момент времени, его можно использовать его для выравнивания между входным звуком и выходным текстом. Это выравнивание не является совершенным, и в нем могут быть ошибки. В рамках данной работы показано, что если модель ASR точна и имеет низкую частоту ошибок в символах (Char-Error-Rate, CER), то можно извлечь достаточно хорошее выравнивание между текстом и звуком. Полученное выравнивание на основе CTC можно применить для обучения модели, которая будет предсказывать длительности графем для входного текста. Предиктор длительности графемы заменяет выравнивание на основе механизма внимания (attention) и позволяет избежать пропуски и повторения слов. При этом. эксперименты с набором данных LJSpeech~\cite{ljspeech} показывают, что качество речи для TalkNet сравнимо с лучшими авторегрессионным подходами.
+
+Конволюционная структура обоих частей позволяет проводить параллельное обучение, также значительно ускоряет скорость вывода. Такая структура позволяет работать значительно быстрее со значительно меньшим числом параметров, поддерживая качество генерируемой речи аналогичное FastSpeech~\cite{fastspeech} и Tacotron 2~\cite{tacotron2}.
 
 \subsection{Обзор методов генерации речи}
 
-A typical statistical parametric TTS pipeline has the following stages: grapheme-to-phoneme conversion, a phoneme duration predictor, an acoustic frame-level feature generator, and a vocoder~\cite{taylor}. Zen et al~\cite{zen-2015,zen-2016} proposed a hybrid NN -- parametric TTS model, where deep neural networks are used to predict the phoneme duration and to generate frame-level acoustic features. The phoneme duration predictor was trained on Hidden Markov Model (HMM)-based phonetic alignments.  
+Методы синтеза речи, основанные на статистике, обычно имеют следующие части: преобразователь графем в фонемы, предиктор длительностей фонемы, генератор акустических признаков (например, мэл-спектрограмм) и вокодер~\cite{taylor}. Zen et al~\cite{zen2009,zen-2015,zen-2016} предложили гибридную нейронную параметрическую модель TTS (Рисунок~\ref{fig:stats-tts} и \ref{fig:zen-tts}), в которой глубокие нейронные сети используются для прогнозирования длительности фонемы и генерации акустических признаков на уровне кадра. Предиктор длительности фонемы был обучен на основе скрытой марковской модели (HMM), из которой извлекались фонетические выравнивания.
 
-DeepVoice models~\cite{deepvoice1,deepvoice2} also adopt the traditional TTS structure, but they replace all components with NNs. To train the phoneme duration predictor, an auxiliary CTC-based model for phonetic segmentation was used to annotate  data with phoneme boundaries. Tacotron~\cite{tacotron1,tacotron2} is an end-to-end NN which takes characters as input and directly outputs the mel-spectrogram. Tacotron 2 uses an encoder-attention-decoder architecture. The encoder is composed from three convolutional layers plus a single bidirectional LSTM. The decoder is a recurrent neural network (RNN) with location-sensitive monotonic attention.
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/stats-tts.png}
+\caption{Блок-диаграмма работы статистической TTS системы с предсказанием длительностей графем~\cite{zen2009}}
+\label{fig:stats-tts}
+\end{figure}
 
-The sequential nature of RNN-based models limits the training and inference efficiency. There has been a number of TTS models without RNNs. DeepVoice 3~\cite{deepvoice3} replaces an RNN with a fully-convolutional encoder-decoder with monotonic attention. Switching from RNN to a convolutional neural network (CNN) makes training faster, but the model inference is still auto-regressive. Another end-to-end TTS model, which does not use RNNs, is ParaNet~\cite{paranet}. ParaNet is a convolutional encoder-decoder with attention. It distills attention from a teacher auto-regressive TTS model. Lastly, Transformer-TTS~\cite{transformer-tts} replaces an RNN-based encoder-decoder with a Transformer-like  attention-only architecture~\cite{attention-is-all}. Transformer-TTS first converts text to phonemes using a rule-based converter. Using phoneme sequences as input, Transformer-TTS generates mel-spectrograms.  
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/zen-tts.png}
+\caption{Более современный вариант модели с предсказыванием длительностей входных графем с использованием нейронных сеток~\cite{zen-2015,zen-2016}}
+\label{fig:zen-tts}
+\end{figure}
 
-As with other attention-based models, Tacotron, Transformer-TTS and ParaNet occasionally miss or repeat words~\cite{paranet}. To prevent word skipping and repeating, FastSpeech~\cite{fastspeech} proposes a novel feed-forward Transformer-based model, discarding the conventional encoder-attention-decoder structure. FastSpeech uses an explicit length regulator, which expands the hidden sequence of phonemes according to a predicted duration in order to match the length of a mel-spectrogram sequence. The target phoneme duration is extracted from the attention alignment in an external pre-trained TTS model, Tacotron 2.
+Один из других возможных подходов -- DeepVoice~\cite{deepvoice1, deepvoice2} (Рисунок~\ref{fig:related-work:deepvoice-1} и \ref{fig:related-work:deepvoice-2}) -- также основан на для традиционной для области синтеза речи структуре, но заменяет обучаемые компоненты на нейронные сети. Для обучения предиктора длительности фонем была использована вспомогательная модель на основе CTC для фонетической сегментации, позволяющая аннотировать данные по границам фонем. Другая модель -- Tacotron~\cite{tacotron1,tacotron2} (Рисунок~\ref{fig:related-work:tacotron-2}) -- это end-to-end нейронная сеть, которая принимает символы в качестве входных данных и сразу выводит мэл-спектрограмму слева направо шаг за шагом (авторегрессионно). Tacotron 2 использует архитектуру encoder-decoder с механизмами внимания. Encoder состоит из трех сверточных слоев и одного двунаправленного LSTM. Decoder представляет собой рекуррентную нейронную сеть (RNN) с чувствительным к местоположению монотонным вниманием (location-sensitive monotonic attention). Авторегрессионность Tacotron2 позволяет хорошо учитывать контекст, а механизмы внимания позволяют правильно расставлять акценты при произношении. Tacotron2 -- одна из лучших на сегодняшний день моделей по качеству, однако для ее обучения требуется много времени (до нескольких дней).
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/deepvoice-1.png}
+\caption{Диаграмма описывающая модель DeepVoice1~\cite{deepvoice1} с промежуточным шагов в виде предсказания длительностей}
+\label{fig:related-work:deepvoice-1}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/deepvoice-2.png}
+\caption{DeepVoice2 с multi-speaker расширением}
+\label{fig:related-work:deepvoice-2}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.7\textwidth]{images/related-work/tacotron-2.png}
+\caption{Процесс генерации речи для авторегрессионного Tacotron2}
+\label{fig:related-work:tacotron-2}
+\end{figure}
+
+Последовательный характер моделей на основе рекуррентных нейронных сетей (RNN) ограничивает эффективность обучения и вывода. Но для генерации речи не обязательно использовать RNN. DeepVoice 3~\cite{deepvoice3} (Рисунок~\ref{fig:related-work:deepvoice-3}) заменяет RNN на конволюционную модель с encoder-decoder архитектурой и монотонным механизмом внимания. Переход от RNN к сверточной нейронной сети (CNN) ускоряет обучение, но вывод модели по-прежнему является авторегрессионным. Другой end-to-end моделью TTS, которая не использует RNN, является ParaNet~\cite{paranet} (Рисунок~\ref{fig:related-work:paranet}). ParaNet -- это еще одна конволюционная encoder-decoder с механизмом внимания. Для обучения ParaNet требуется другая предобученная TTS модель, у которой заимствуется матрица внимания. Наконец, Transformer-TTS и~\cite{transformer-tts} (Рисунок~\ref{fig:related-work:transformer-tts}) заменяет рекуррентные нейронные сети с encoder-decoder структурой на трансформеры~\cite{attention-is-all} (модель, основанная на применении механизма внимания несколько раз подряд). Transformer-TTS сначала преобразует текст в фонемы с помощью конвертера на основе правил. Используя последовательности фонем в качестве входных данных, Transformer-TTS генерирует мэл-спектрограмму.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/deepvoice-3.png}
+\caption{Encoder-decoder структура в архитектуре DeepVoice3}
+\label{fig:related-work:deepvoice-3}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/paranet.png}
+\caption{Архитектура ParaNet~\cite{paranet}}
+\label{fig:related-work:paranet}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.7\textwidth]{images/related-work/transformer-tts.png}
+\caption{Encoder-decoder Архитектура Transformer-TTS~\cite{transformer-tts}}
+\label{fig:related-work:transformer-tts}
+\end{figure}
+
+Как и в других моделях, основанных на внимании, Tacotron, Transformer-TTS и ParaNet иногда пропускают или повторяют слова~\cite{paranet}. Чтобы предотвратить пропуск и повторение слов, FastSpeech~\cite{fastspeech} предлагает end-to-end модель с использованием трансформеров~\cite{attention-is-all} взамен традиционной структуре encoder-attention-decoder. FastSpeech использует явный регулятор длины в виде отдельного декодера, который расширяет последовательность фонем в соответствии с предсказанной длительностью, чтобы длина последовательности стала соответствовать длине мэл-спектро\-граммы. Длительности фонем извлекается из выравнивания механизма внимания во внешней предварительно обученной модели TTS, Tacotron 2.
+Такой подход показывает неплохие результаты с точки зрения качества и значительно повышает скорость генерации. FastSpeech -- первая модель, показавшая, что идею с промежуточным шагов предсказания длительностей можно успешно применять для построения хорошо работающей TTS системы. Во многом, результаты текущей работы, основаны на продолжении и развитии идей FastSpeech.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.0\textwidth]{images/related-work/fastspeech.png}
+\caption{Архитектура FastSpeech~\cite{fastspeech}}
+\label{fig:related-work:fastspeech}
+\end{figure}
+
+Как видно, идеи из области глубокого обучения позволили успростить подходы для генерации речи.
