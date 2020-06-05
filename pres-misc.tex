@@ -33,9 +33,16 @@
 \usepackage{amsthm}
 \usepackage{blindtext}
 \usepackage{makecell}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{bigdelim}
+\usepackage{multicol}
 
 \usepackage{polyglossia}
 \setdefaultlanguage{english}
+\setotherlanguages{russian}
 \setmainfont[Mapping=tex-text]{CMU Serif}
 \setsansfont[Mapping=tex-text]{CMU Sans Serif}
 \setmonofont[Mapping=tex-text]{CMU Serif}
@@ -49,3 +56,10 @@
 \end{filecontents}
 \usepackage[style=verbose,backend=biber]{biblatex}
 \addbibresource{main.bib}
+
+\definecolor{green}{RGB}{0, 200, 0}
+
+\addto\captionsenglish{%
+  \renewcommand{\figurename}{Фигура}%
+  \renewcommand{\tablename}{Таблица}%
+}
